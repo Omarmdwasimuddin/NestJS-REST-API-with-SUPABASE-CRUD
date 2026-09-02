@@ -11,3 +11,6 @@ cd nest-supabase
 code .
 ```
 ---
+
+
+#### [Connect Supabase PostgreSQL with NestJS](https://github.com/Omarmdwasimuddin/Connect-Supabase-PostgreSQL-with-NestJS)
