@@ -57,18 +57,18 @@ export class Employee {
 
 >#### add- imports: [TypeOrmModule.forFeature([Employee])],
 
-#### `employee-bd.module.ts`
+#### `employee.module.ts`
 ```bash
 import { Module } from '@nestjs/common';
-import { EmployeeBdService } from './employee-bd.service';
-import { EmployeeBdController } from './employee-bd.controller';
+import { EmployeeService } from './employee.service';
+import { EmployeeController } from './employee.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Employee } from './employees.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Employee])],
-  providers: [EmployeeBdService],
-  controllers: [EmployeeBdController]
+  providers: [EmployeeService],
+  controllers: [EmployeeController]
 })
-export class EmployeeBdModule {}
+export class EmployeeModule {}
 ```
