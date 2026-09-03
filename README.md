@@ -101,3 +101,45 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 })
 export class AppModule {}
 ```
+
+#
+
+#### `employee-bd.service.ts`
+```bash
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Employee } from './employees.entity';
+import { Repository } from 'typeorm';
+
+@Injectable()
+export class EmployeeBdService {
+    constructor(
+        @InjectRepository(Employee) private employeeRepository: Repository<Employee>,
+    ) {}
+
+    async create(employeeData: Partial<Employee>): Promise<Employee> {
+        const employee = this.employeeRepository.create(employeeData);
+        return this.employeeRepository.save(employee);
+    }
+}
+```
+
+#
+
+#### `employee-bd.controller.ts`
+```bash
+import { Body, Controller, Post } from '@nestjs/common';
+import { EmployeeBdService } from './employee-bd.service';
+import { Employee } from './employees.entity';
+
+@Controller('employee-bd')
+export class EmployeeBdController {
+    constructor(private readonly employeeBdService: EmployeeBdService) {}
+
+    @Post()
+    async createEmployee(@Body() employeeData: Partial<Employee>) {
+        return this.employeeBdService.create(employeeData);
+    }
+}
+```
+---
