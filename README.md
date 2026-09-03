@@ -72,3 +72,32 @@ import { Employee } from './employees.entity';
 })
 export class EmployeeModule {}
 ```
+
+
+> **Note:** `app.module.ts`- e add koro:
+> - `ConfigModule.forRoot()`
+> - `TypeOrmModule.forRoot({ type: 'postgres', url: process.env.DATABASE_URL, autoLoadEntities: true, synchronize: true })`
+
+### `app.module.ts`
+
+```ts
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { EmployeeModule } from './employee/employee.module';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+
+@Module({
+  imports: [ ConfigModule.forRoot(), TypeOrmModule.forRoot({
+    type: 'postgres',
+    url: process.env.DATABASE_URL,
+    autoLoadEntities: true,
+    synchronize: true,
+  }), EmployeeModule],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+```
