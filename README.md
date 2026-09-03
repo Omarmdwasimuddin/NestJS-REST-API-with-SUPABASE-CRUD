@@ -104,7 +104,7 @@ export class AppModule {}
 
 #
 
-#### `employee-bd.service.ts`
+#### `employee.service.ts`
 ```bash
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -126,7 +126,7 @@ export class EmployeeBdService {
 
 #
 
-#### `employee-bd.controller.ts`
+#### `employee.controller.ts`
 ```bash
 import { Body, Controller, Post } from '@nestjs/common';
 import { EmployeeBdService } from './employee-bd.service';
