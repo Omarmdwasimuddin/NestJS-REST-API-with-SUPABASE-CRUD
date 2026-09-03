@@ -106,20 +106,52 @@ export class AppModule {}
 
 #### `employee.service.ts`
 ```bash
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Employee } from './employees.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 
 @Injectable()
-export class EmployeeBdService {
+export class EmployeeService {
     constructor(
         @InjectRepository(Employee) private employeeRepository: Repository<Employee>,
     ) {}
 
-    async create(employeeData: Partial<Employee>): Promise<Employee> {
+    async createEmployee(employeeData: Partial<Employee>): Promise<Employee> {
         const employee = this.employeeRepository.create(employeeData);
         return this.employeeRepository.save(employee);
+    }
+
+    async findAllEmployees(): Promise<Employee[]> {
+        return this.employeeRepository.find();
+    }
+
+    async findOneEmployee(id: number): Promise<Employee> {
+        const employee = await this.employeeRepository.findOneBy({ id });
+        if (!employee) {
+            throw new NotFoundException(`Employee with ID ${id} not found`);
+        }
+        return employee;
+    }
+
+    async findByName(name: string): Promise<Employee[]> {
+        const employee = await this.employeeRepository.find({
+            where: { name },
+        });
+        if (!employee.length) {
+            throw new NotFoundException(`Employee with name ${name} not found`);
+        }
+        return employee;
+    }
+
+    // Like is case-sensitive, ILike is case-insensitive
+    async searchByKeyword(keyword: string): Promise<Employee[]> {
+        return this.employeeRepository.find({
+            where: {
+                //name: Like(`%${keyword}%`)
+                name: ILike(`%${keyword}%`)
+            }
+        });
     }
 }
 ```
@@ -128,17 +160,39 @@ export class EmployeeBdService {
 
 #### `employee.controller.ts`
 ```bash
-import { Body, Controller, Post } from '@nestjs/common';
-import { EmployeeBdService } from './employee-bd.service';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { EmployeeService } from './employee.service';
 import { Employee } from './employees.entity';
 
-@Controller('employee-bd')
-export class EmployeeBdController {
-    constructor(private readonly employeeBdService: EmployeeBdService) {}
+@Controller('employee')
+export class EmployeeController {
+    constructor(private readonly employeeService: EmployeeService){}
 
     @Post()
-    async createEmployee(@Body() employeeData: Partial<Employee>) {
-        return this.employeeBdService.create(employeeData);
+    async createEmployee(@Body() employeeData: Partial<Employee>){
+        return this.employeeService.createEmployee(employeeData);
+    }
+
+    @Get()
+    async findAllEmployees(): Promise<Employee[]> {
+        return this.employeeService.findAllEmployees();
+    }
+
+    @Get(':id')
+    async findEmployeeById(@Param('id') id: number): Promise<Employee | null> {
+        return this.employeeService.findOneEmployee(id);
+    }
+
+    // find by name
+    @Get('name/:name')
+    async findEmployeeByName(@Param('name') name: string): Promise<Employee[]> {
+        return this.employeeService.findByName(name);
+    }
+
+    // search by keyword (partial match)
+    @Get(`search/:keyword`)
+    async searchEmployeeByKeyword(@Param('keyword') keyword: string): Promise<Employee[]> {
+        return this.employeeService.searchByKeyword(keyword);
     }
 }
 ```
