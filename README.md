@@ -78,7 +78,7 @@ export class EmployeeModule {}
 > - `ConfigModule.forRoot()`
 > - `TypeOrmModule.forRoot({ type: 'postgres', url: process.env.DATABASE_URL, autoLoadEntities: true, synchronize: true })`
 
-### `app.module.ts`
+#### `app.module.ts`
 
 ```ts
 import { Module } from '@nestjs/common';
