@@ -17,12 +17,12 @@ code .
 
 #### Create module, service, controller
 ```bash
-nest g module employee-bd
+nest g module employee
 ```
 ```bash
-nest g service employee-bd
+nest g service employee
 ```
 ```bash
-nest g controller employee-bd
+nest g controller employee
 ```
 ---
