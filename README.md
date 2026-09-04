@@ -109,24 +109,24 @@ export class AppModule {}
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Employee } from './employees.entity';
-import { ILike, Repository } from 'typeorm';
+import { ILike, Like, Repository } from 'typeorm';
 
 @Injectable()
-export class EmployeeService {
+export class EmployeeBdService {
     constructor(
         @InjectRepository(Employee) private employeeRepository: Repository<Employee>,
     ) {}
 
-    async createEmployee(employeeData: Partial<Employee>): Promise<Employee> {
+    async create(employeeData: Partial<Employee>): Promise<Employee> {
         const employee = this.employeeRepository.create(employeeData);
         return this.employeeRepository.save(employee);
     }
 
-    async findAllEmployees(): Promise<Employee[]> {
+    async findAll(): Promise<Employee[]> {
         return this.employeeRepository.find();
     }
 
-    async findOneEmployee(id: number): Promise<Employee> {
+    async findOne(id: number): Promise<Employee> {
         const employee = await this.employeeRepository.findOneBy({ id });
         if (!employee) {
             throw new NotFoundException(`Employee with ID ${id} not found`);
@@ -145,7 +145,7 @@ export class EmployeeService {
     }
 
     // Like is case-sensitive, ILike is case-insensitive
-    async searchByKeyword(keyword: string): Promise<Employee[]> {
+    async searchByName(keyword: string): Promise<Employee[]> {
         return this.employeeRepository.find({
             where: {
                 //name: Like(`%${keyword}%`)
@@ -153,6 +153,36 @@ export class EmployeeService {
             }
         });
     }
+
+    async update(id: number, updateData: Partial<Employee>): Promise<Employee> {
+        const employee = await this.employeeRepository.findOneBy({ id });
+        if (!employee) {
+            throw new NotFoundException(`Employee with ID ${id} not found`);
+        }
+        const updatedEmployee = Object.assign(employee,  updateData);
+        return this.employeeRepository.save(updatedEmployee);
+    }
+
+    async delete(id: number): Promise<{ message: string }> {
+        const result = await this.employeeRepository.delete({ id });
+        if (result.affected === 0) {
+            throw new NotFoundException(`Employee with ID ${id} not found`);
+        }
+        return { message: `Employee with ID ${id} deleted successfully` };
+    }
+
+    async search(filters: { name?: string; department?: string }): Promise<Employee[]> {
+        const query = this.employeeRepository.createQueryBuilder('employee');
+
+        if (filters.name) {
+            query.andWhere('employee.name ILIKE :name', { name: `%${filters.name}%`});
+        }
+        if (filters.department){
+            query.andWhere(`employee.department ILIKE :department`, { department: `%${filters.department}%`});
+        }
+        return query.getMany();
+    }
+
 }
 ```
 
