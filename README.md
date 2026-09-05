@@ -153,14 +153,45 @@ export class EmployeeService {
             }
         });
     }
+
+    async update(id: number, updateData: Partial<Employee>): Promise<Employee> {
+        const employee = await this.employeeRepository.findOneBy({ id });
+        if (!employee) {
+            throw new NotFoundException(`Employee with ID ${id} not found`);
+        }
+        const updatedEmployee = Object.assign(employee,  updateData);
+        return this.employeeRepository.save(updatedEmployee);
+    }
+
+    async delete(id: number): Promise<{ message: string }> {
+        const result = await this.employeeRepository.delete({ id });
+        if (result.affected === 0) {
+            throw new NotFoundException(`Employee with ID ${id} not found`);
+        }
+        return { message: `Employee with ID ${id} deleted successfully` };
+    }
+
+    async search(filters: { name?: string; department?: string }): Promise<Employee[]> {
+        const query = this.employeeRepository.createQueryBuilder('employee');
+
+        if (filters.name) {
+            query.andWhere('employee.name ILIKE :name', { name: `%${filters.name}%`});
+        }
+        if (filters.department){
+            query.andWhere(`employee.department ILIKE :department`, { department: `%${filters.department}%`});
+        }
+        return query.getMany();
+    }
 }
 ```
 
 #
 
+>#### Note: Get method er modhe id er agei filter dite hobe na hole filter kaj korbe na. code ta dekhle clear hoye jabe
+
 #### `employee.controller.ts`
 ```bash
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { EmployeeService } from './employee.service';
 import { Employee } from './employees.entity';
 
@@ -178,6 +209,14 @@ export class EmployeeController {
         return this.employeeService.findAllEmployees();
     }
 
+    @Get('filter')
+    async filterEmployees(
+        @Query('name') name?: string,
+        @Query('department') department?: string,
+    ): Promise<Employee[]> {
+        return this.employeeService.search({ name, department });
+    }
+
     @Get(':id')
     async findEmployeeById(@Param('id') id: number): Promise<Employee | null> {
         return this.employeeService.findOneEmployee(id);
@@ -193,6 +232,18 @@ export class EmployeeController {
     @Get(`search/:keyword`)
     async searchEmployeeByKeyword(@Param('keyword') keyword: string): Promise<Employee[]> {
         return this.employeeService.searchByKeyword(keyword);
+    }
+
+    @Put(':id')
+    async updateEmployee(
+        @Param('id') id: number, 
+        @Body() updateData: Partial<Employee>): Promise<Employee> {
+        return this.employeeService.update(id, updateData);
+    }
+
+    @Delete(':id')
+    async deleteEmployee(@Param('id') id: number): Promise<{ message: string }> {
+        return this.employeeService.delete(id);
     }
 }
 ```
